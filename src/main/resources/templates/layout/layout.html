@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head">
+<meta charset="UTF-8"/>
+<title th:text="'Spring Boot:MVC + Thymeleaf + Data JPA - ' + ${titulo}"></title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+</head>
+<body>
+
+<header th:fragment="header">
+	<nav class="navbar navbar-expand-lg bg-body-tertiary">
+	  <div class="container-fluid">
+	    <a class="navbar-brand" href="#">Spring Boot</a>
+	    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+	      <span class="navbar-toggler-icon"></span>
+	    </button>
+	    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+	      <div class="navbar-nav">
+	        <a class="nav-link active" aria-current="page" href="#">Home</a>
+	        <a class="nav-link" href="#" th:href="@{/listar}">Clientes</a>
+	      </div>
+	    </div>
+	  </div>
+	</nav>
+	
+	<div class="alert alert-success" th:if="${success != null}" th:text="${success}"></div>
+	<div class="alert alert-danger" th:if="${error != null}" th:text="${error}"></div>
+	<div class="alert alert-warning" th:if="${warning != null}" th:text="${warning}"></div>
+	<div class="alert alert-info" th:if="${info != null}" th:text="${info}"></div>
+	
+</header>
+
+<div class="container">
+	
+</div>
+
+<footer th:fragment="footer" class="container">
+	<hr/>
+	<img th:src="@{images/spring.png}" alt="Spring Logo" width="300px" height="150px"/>
+	<p>Powered by <a href="https://projets.spring.io/pring-boot/">Spring Boot</a> y <a href="http://www.thymeleaf.org">Thymeleaf</a></p>
+</footer>
+</body>
+</html>
