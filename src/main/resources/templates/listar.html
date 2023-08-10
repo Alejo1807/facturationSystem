@@ -40,10 +40,11 @@
 						<td th:text="${cliente.createAt}"></td>
 						<td><a class="btn btn-primary btn-xs" th:href="@{/form/}+${cliente.id}" th:text="'editar'"></a></td>
 						<td><a class="btn btn-danger btn-xs" th:href="@{/eliminar/}+${cliente.id}" th:text="'eliminar'" onclick="return confirm('Está seguro que quiere eliminar');"></a></td>
-						
 					</tr>
 				</tbody>
 			</table>		
+		
+			<nav th:replace="paginator-nav::paginator"></nav>
 		
 		</div>
 	
