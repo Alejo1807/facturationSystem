@@ -1,15 +1,17 @@
 package com.bolsadeideas.springboot.app.controllers;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.net.MalformedURLException;
 import java.util.Map;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,6 +27,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.bolsadeideas.springboot.app.models.entity.Cliente;
 import com.bolsadeideas.springboot.app.service.IClienteService;
+import com.bolsadeideas.springboot.app.service.IUploadFileService;
 import com.bolsadeideas.springboot.app.util.paginator.PageRender;
 
 import jakarta.validation.Valid;
@@ -35,6 +38,40 @@ public class ClienteController {
 	
 	@Autowired
 	private IClienteService clienteService; 
+	
+	@Autowired
+	private IUploadFileService uploadFileService;
+
+	
+	@GetMapping("/uploads/{filename:.+}")
+	public ResponseEntity<Resource> verFoto(@PathVariable String filename){
+		
+		Resource recurso=null;
+		
+		try {
+			recurso = uploadFileService.load(filename);
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""+ recurso.getFilename()+"\"").body(recurso);
+	}
+	
+	@GetMapping(value="/ver/{id}")
+	public String ver(@PathVariable(value="id") Long id,Map<String,Object> model,RedirectAttributes flash) {
+		
+		Cliente cliente = clienteService.findOne(id);
+		if(cliente==null) {
+			flash.addAttribute("error","el cliente no existe en la base de datos");
+			return "redirect:/listar";
+		}
+		
+		model.put("cliente", cliente);
+		model.put("titulo", "Detalle Cliente: " + cliente.getNombre());
+		
+		return "ver";
+	}
 	
 	@RequestMapping(value="/listar",method=RequestMethod.GET)
 	public String listar(@RequestParam(name="page",defaultValue="0") int page,  Model model) {
@@ -71,18 +108,23 @@ public class ClienteController {
 		}
 		
 		if(!foto.isEmpty()) {
-			Path directorioRecursos=Paths.get("src//main//resources//static/upload");
-			String rootPath=directorioRecursos.toFile().getAbsolutePath();
-			try {
-				byte[] bytes = foto.getBytes();
-				Path rutaCompleta=Paths.get(rootPath + foto.getOriginalFilename());
-				Files.write(rutaCompleta, bytes);
-				flash.addFlashAttribute("info","Ha subido correctamente" + foto.getOriginalFilename());
-				cliente.setFoto(foto.getOriginalFilename());
-			} catch (IOException e) {
+			
+			if(cliente.getId()!=null && cliente.getId()>0 && cliente.getFoto()!=null && cliente.getFoto().length()>0) {
 				
-				e.printStackTrace();
+				uploadFileService.delete(cliente.getFoto());
 			}
+			
+			String uniqueFilename=null;
+			try {
+				uniqueFilename = uploadFileService.copy(foto);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
+			
+			flash.addFlashAttribute("info","Ha subido correctamente" + uniqueFilename);
+			
+			cliente.setFoto(uniqueFilename);
 		}
 		
 		String mensajeFlash = (cliente.getId()!=null)?"Cliente editado con exito":"Cliente Creado con éxito";
@@ -121,9 +163,15 @@ public class ClienteController {
 	public String eliminar(@PathVariable(value="id") Long id,RedirectAttributes flash) {
 		
 		if(id>0) {
+			Cliente cliente = clienteService.findOne(id);
 			clienteService.delete(id);
 			flash.addFlashAttribute("success", "Cliente eliminado con éxito");
-		}	
+			
+			if(uploadFileService.delete(cliente.getFoto())) {
+					flash.addAttribute("info","Foto " + cliente.getFoto() + " eliminada con éxito");
+			}
+			
+		}
 		
 		return "redirect:/listar";
 	}
