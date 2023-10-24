@@ -15,7 +15,7 @@
 				<a class="btn btn-light btn-xs" th:href="@{'/ver/' + ${factura.cliente.id}}" th:text="'&laquo; volver'"></a>
 			</h4>
 			
-			<form th:action="@{/factura/form/}" th:object="${factura}" method="post">
+			<form th:action="@{/factura/form}" th:object="${factura}" method="post">
 			
 				
 				<div class="form-group row">
@@ -28,7 +28,8 @@
 				<div class="form-group row">
 					<label for="descripcion" class="col-sm-2 col-form-label" th:text="'Descripción'"></label>
 					<div class="col-sm-6">
-						<input type="text" th:field="*{descripcion}" class="form-control"/>
+						<input type="text" th:field="*{descripcion}" class="form-control" th:errorclass="'form-control is-invalid'"/>
+						<div class="invalid-feedback" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"></div>
 					</div>
 				</div>
 				
