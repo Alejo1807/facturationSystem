@@ -1,10 +1,13 @@
 package com.bolsadeideas.springboot.app;
 
 import org.springframework.security.core.userdetails.User;
+
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,30 +16,31 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import com.bolsadeideas.springboot.app.auth.handler.LoginSuccesHandler;
 
-@EnableGlobalMethodSecurity(securedEnabled=true)
+@EnableMethodSecurity(securedEnabled = true, prePostEnabled = true)
 @Configuration
 public class SpringSecurityConfig {
     
 	@Autowired
 	private	LoginSuccesHandler succesHandler;
 	
-    @Bean 
-    public static BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder; 
+	
+	@Autowired
+	private DataSource dataSource;
+	
     @Bean
     public UserDetailsService userDetailsService() throws Exception{
                 
         InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
         manager.createUser(User
                 .withUsername("user")
-                .password(passwordEncoder().encode("user"))
+                .password(passwordEncoder.encode("user"))
                 .roles("USER")
                 .build());
          manager.createUser(User
                     .withUsername("admin")
-                    .password(passwordEncoder().encode("admin"))
+                    .password(passwordEncoder.encode("admin"))
                     .roles("ADMIN","USER")
                     .build());
         
